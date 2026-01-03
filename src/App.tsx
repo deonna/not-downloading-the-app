@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Link2, AlertCircle } from 'lucide-react';
 
 interface ValidationResult {
   success: boolean;
@@ -102,43 +102,9 @@ function App() {
 
           {normalizedUrl && (
             <div className="mt-6 p-6 bg-green-50 rounded-xl border-2 border-green-200">
-              <div className="flex items-start gap-3 mb-3">
-                <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-green-900 mb-1">Valid URL</p>
-                  <p className="text-xs text-green-700">Successfully normalized and validated</p>
-                </div>
-              </div>
-              <div className="space-y-2 mt-4">
-                <div>
-                  <p className="text-xs font-semibold text-slate-600 mb-1">Full URL:</p>
-                  <p className="text-sm text-slate-900 break-all font-mono bg-white px-3 py-2 rounded border border-green-200">
-                    {normalizedUrl.href}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs font-semibold text-slate-600 mb-1">Protocol:</p>
-                    <p className="text-sm text-slate-900 font-mono bg-white px-3 py-2 rounded border border-green-200">
-                      {normalizedUrl.protocol}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-slate-600 mb-1">Hostname:</p>
-                    <p className="text-sm text-slate-900 font-mono bg-white px-3 py-2 rounded border border-green-200">
-                      {normalizedUrl.hostname}
-                    </p>
-                  </div>
-                </div>
-                {normalizedUrl.pathname !== '/' && (
-                  <div>
-                    <p className="text-xs font-semibold text-slate-600 mb-1">Path:</p>
-                    <p className="text-sm text-slate-900 break-all font-mono bg-white px-3 py-2 rounded border border-green-200">
-                      {normalizedUrl.pathname}
-                    </p>
-                  </div>
-                )}
-              </div>
+              <p className="text-sm text-slate-900 break-all font-mono bg-white px-4 py-3 rounded border border-green-200">
+                {normalizedUrl.href}
+              </p>
             </div>
           )}
         </div>
