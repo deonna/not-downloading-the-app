@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link2, AlertCircle } from 'lucide-react';
+import { Link2, AlertCircle, Loader2 } from 'lucide-react';
+import { supabase } from './lib/supabase';
 
 type Platform = 'Instagram' | 'Reddit' | 'TikTok';
 
@@ -8,6 +9,51 @@ interface ValidationResult {
   url?: URL;
   platform?: Platform;
   error?: string;
+}
+
+interface ExpandUrlResponse {
+  expandedUrl: string;
+}
+
+interface ExpandUrlError {
+  error: string;
+}
+
+function isShortLink(url: URL): boolean {
+  const hostname = url.hostname.toLowerCase();
+  return hostname === 'vm.tiktok.com' || hostname === 'vt.tiktok.com' || hostname === 'redd.it';
+}
+
+async function expandShortUrl(url: string): Promise<{ success: boolean; expandedUrl?: string; error?: string }> {
+  try {
+    const { data, error } = await supabase.functions.invoke<ExpandUrlResponse>('expand-url', {
+      body: { url }
+    });
+
+    if (error) {
+      return {
+        success: false,
+        error: error.message || 'Failed to expand short link'
+      };
+    }
+
+    if (data && data.expandedUrl) {
+      return {
+        success: true,
+        expandedUrl: data.expandedUrl
+      };
+    }
+
+    return {
+      success: false,
+      error: 'Failed to expand short link'
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to expand short link'
+    };
+  }
 }
 
 function detectPlatform(url: URL): Platform | null {
@@ -21,7 +67,7 @@ function detectPlatform(url: URL): Platform | null {
     return 'Reddit';
   }
 
-  if (hostname === 'tiktok.com' || hostname === 'www.tiktok.com' || hostname === 'vm.tiktok.com') {
+  if (hostname === 'tiktok.com' || hostname === 'www.tiktok.com') {
     return 'TikTok';
   }
 
@@ -61,7 +107,7 @@ function rewriteTikTokUrl(url: URL): URL | null {
   return null;
 }
 
-function validateAndNormalizeUrl(input: string): ValidationResult {
+async function validateAndNormalizeUrl(input: string): Promise<ValidationResult> {
   if (!input || input.trim() === '') {
     return {
       success: false,
@@ -77,6 +123,50 @@ function validateAndNormalizeUrl(input: string): ValidationResult {
 
   try {
     const url = new URL(urlString);
+
+    if (isShortLink(url)) {
+      const expansionResult = await expandShortUrl(urlString);
+
+      if (!expansionResult.success || !expansionResult.expandedUrl) {
+        return {
+          success: false,
+          error: expansionResult.error || 'Failed to expand short link'
+        };
+      }
+
+      urlString = expansionResult.expandedUrl;
+      const expandedUrl = new URL(urlString);
+      const platform = detectPlatform(expandedUrl);
+
+      if (!platform) {
+        return {
+          success: false,
+          error: 'Expanded link is not a supported platform.'
+        };
+      }
+
+      let normalizedUrl = expandedUrl;
+
+      if (platform === 'Instagram') {
+        normalizedUrl = rewriteInstagramUrl(expandedUrl);
+      } else if (platform === 'Reddit') {
+        normalizedUrl = rewriteRedditUrl(expandedUrl);
+      } else if (platform === 'TikTok') {
+        const tiktokUrl = rewriteTikTokUrl(expandedUrl);
+        if (!tiktokUrl) {
+          normalizedUrl = expandedUrl;
+        } else {
+          normalizedUrl = tiktokUrl;
+        }
+      }
+
+      return {
+        success: true,
+        url: normalizedUrl,
+        platform: platform
+      };
+    }
+
     const platform = detectPlatform(url);
 
     if (!platform) {
@@ -121,6 +211,7 @@ function App() {
   const [normalizedUrl, setNormalizedUrl] = useState<URL | null>(null);
   const [platform, setPlatform] = useState<Platform | null>(null);
   const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLinkInput(e.target.value);
@@ -129,17 +220,30 @@ function App() {
     setPlatform(null);
   };
 
-  const handleButtonClick = () => {
-    const result = validateAndNormalizeUrl(linkInput);
+  const handleButtonClick = async () => {
+    setIsLoading(true);
+    setError('');
+    setNormalizedUrl(null);
+    setPlatform(null);
 
-    if (result.success && result.url && result.platform) {
-      setNormalizedUrl(result.url);
-      setPlatform(result.platform);
-      setError('');
-    } else {
-      setError(result.error || 'An error occurred');
+    try {
+      const result = await validateAndNormalizeUrl(linkInput);
+
+      if (result.success && result.url && result.platform) {
+        setNormalizedUrl(result.url);
+        setPlatform(result.platform);
+        setError('');
+      } else {
+        setError(result.error || 'An error occurred');
+        setNormalizedUrl(null);
+        setPlatform(null);
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
       setNormalizedUrl(null);
       setPlatform(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -165,7 +269,7 @@ function App() {
                 type="text"
                 value={linkInput}
                 onChange={handleInputChange}
-                placeholder="Paste your Instagram, Reddit, or TikTok link here..."
+                placeholder="Paste your Instagram, Reddit, TikTok, or short link here..."
                 className="w-full px-6 py-4 text-lg border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
               />
               {error && (
@@ -178,10 +282,17 @@ function App() {
 
             <button
               onClick={handleButtonClick}
-              disabled={!linkInput.trim()}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold text-lg py-4 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg disabled:shadow-none"
+              disabled={!linkInput.trim() || isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold text-lg py-4 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg disabled:shadow-none flex items-center justify-center gap-2"
             >
-              Unwrap Link
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                'Unwrap Link'
+              )}
             </button>
           </div>
 
@@ -201,7 +312,7 @@ function App() {
         </div>
 
         <div className="mt-6 text-center text-sm text-slate-500">
-          Supports Instagram Reels, Reddit posts, and TikTok videos
+          Supports Instagram Reels, Reddit posts, TikTok videos, and short links (vm.tiktok.com, vt.tiktok.com, redd.it)
         </div>
       </div>
     </div>
