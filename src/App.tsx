@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link2, AlertCircle, Loader2, ExternalLink, Copy, Check } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
@@ -214,6 +214,21 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlParam = params.get('url');
+
+    if (urlParam) {
+      try {
+        const decodedUrl = decodeURIComponent(urlParam);
+        setLinkInput(decodedUrl);
+        processUrl(decodedUrl);
+      } catch (error) {
+        setError('Invalid URL parameter');
+      }
+    }
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLinkInput(e.target.value);
     setError('');
@@ -221,14 +236,14 @@ function App() {
     setPlatform(null);
   };
 
-  const handleButtonClick = async () => {
+  const processUrl = async (urlToProcess: string) => {
     setIsLoading(true);
     setError('');
     setNormalizedUrl(null);
     setPlatform(null);
 
     try {
-      const result = await validateAndNormalizeUrl(linkInput);
+      const result = await validateAndNormalizeUrl(urlToProcess);
 
       if (result.success && result.url && result.platform) {
         setNormalizedUrl(result.url);
@@ -246,6 +261,10 @@ function App() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleButtonClick = async () => {
+    await processUrl(linkInput);
   };
 
   const handleWatchNow = () => {
