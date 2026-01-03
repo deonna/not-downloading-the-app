@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link2, AlertCircle, Loader2, ExternalLink, Copy, Check, ShieldCheck, Link as LinkIcon } from 'lucide-react';
+import { Link2, AlertCircle, Loader2, ExternalLink, Copy, Check, ShieldCheck, Link as LinkIcon, Share2 } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
 type Platform = 'Instagram' | 'Reddit' | 'TikTok';
@@ -359,8 +359,24 @@ function App() {
     }
   };
 
+  const handleShare = async () => {
+    if (normalizedUrl && navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Clean Social Media Link',
+          text: `Watch ${platform} content without logging in`,
+          url: normalizedUrl.href
+        });
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          setError('Could not share link. Please copy it manually.');
+        }
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-6 pt-24">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4">
@@ -469,6 +485,15 @@ function App() {
                     </>
                   )}
                 </button>
+                {navigator.share && (
+                  <button
+                    onClick={handleShare}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg py-3 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <Share2 className="w-5 h-5" />
+                    <span>Share</span>
+                  </button>
+                )}
                 <button
                   onClick={handleWatchNow}
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold text-lg py-3 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2"
