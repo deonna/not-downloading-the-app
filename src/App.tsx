@@ -28,6 +28,19 @@ function detectPlatform(url: URL): Platform | null {
   return null;
 }
 
+function rewriteInstagramUrl(url: URL): URL {
+  const pathname = url.pathname;
+  const reelMatch = pathname.match(/\/reels?\/([a-zA-Z0-9_-]+)/);
+
+  if (reelMatch && reelMatch[1]) {
+    const reelId = reelMatch[1];
+    const rewrittenUrl = new URL(`https://www.instagram.com/reels/${reelId}/`);
+    return rewrittenUrl;
+  }
+
+  return url;
+}
+
 function validateAndNormalizeUrl(input: string): ValidationResult {
   if (!input || input.trim() === '') {
     return {
@@ -53,9 +66,15 @@ function validateAndNormalizeUrl(input: string): ValidationResult {
       };
     }
 
+    let normalizedUrl = url;
+
+    if (platform === 'Instagram') {
+      normalizedUrl = rewriteInstagramUrl(url);
+    }
+
     return {
       success: true,
-      url: url,
+      url: normalizedUrl,
       platform: platform
     };
   } catch (error) {
