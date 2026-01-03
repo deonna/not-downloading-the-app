@@ -6,31 +6,31 @@ export function Navigation() {
   const isHomePage = location.pathname === '/';
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-b border-slate-200 z-50">
+    <nav className="fixed top-0 left-0 right-0 bg-white border-b-4 border-black z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2 text-slate-900 hover:text-blue-600 transition-colors">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Link2 className="w-6 h-6 text-white" />
+          <Link to="/" className="flex items-center gap-2 text-black hover:text-[#FF2B51] transition-colors">
+            <div className="w-10 h-10 border-3 border-black flex items-center justify-center bg-white">
+              <Link2 className="w-6 h-6" strokeWidth={3} />
             </div>
-            <span className="font-bold text-lg hidden sm:inline">not downloading this</span>
+            <span className="font-display font-bold text-lg hidden sm:inline uppercase tracking-tight">not downloading this</span>
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {!isHomePage && (
               <Link
                 to="/"
-                className="flex items-center gap-2 px-4 py-2 text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-black hover:bg-[#FF2B51] hover:text-white border-2 border-transparent hover:border-black transition-all font-bold uppercase text-sm tracking-wide"
               >
-                <Home className="w-5 h-5" />
+                <Home className="w-4 h-4" strokeWidth={3} />
                 <span className="hidden sm:inline">Home</span>
               </Link>
             )}
             <Link
               to="/help"
-              className="flex items-center gap-2 px-4 py-2 text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-black hover:bg-[#FF2B51] hover:text-white border-2 border-transparent hover:border-black transition-all font-bold uppercase text-sm tracking-wide"
             >
-              <HelpCircle className="w-5 h-5" />
+              <HelpCircle className="w-4 h-4" strokeWidth={3} />
               <span className="hidden sm:inline">Help</span>
             </Link>
           </div>
