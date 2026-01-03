@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link2, AlertCircle, Loader2, ExternalLink, Copy, Check } from 'lucide-react';
+import { Link2, AlertCircle, Loader2, ExternalLink, Copy, Check, ShieldCheck, Link as LinkIcon } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
 type Platform = 'Instagram' | 'Reddit' | 'TikTok';
@@ -9,6 +9,9 @@ interface ValidationResult {
   url?: URL;
   platform?: Platform;
   error?: string;
+  wasExpanded?: boolean;
+  trackersRemoved?: number;
+  wasAlreadyClean?: boolean;
 }
 
 interface ExpandUrlResponse {
@@ -22,6 +25,41 @@ interface ExpandUrlError {
 function isShortLink(url: URL): boolean {
   const hostname = url.hostname.toLowerCase();
   return hostname === 'vm.tiktok.com' || hostname === 'vt.tiktok.com' || hostname === 'redd.it';
+}
+
+function cleanTrackingParams(url: URL): { cleanedUrl: URL; trackersRemoved: number } {
+  const trackingParams = [
+    'utm_source',
+    'utm_medium',
+    'utm_campaign',
+    'utm_term',
+    'utm_content',
+    '_r',
+    '_t',
+    'igshid',
+    'igsh',
+    'context',
+    'ref',
+    'ref_src',
+    'ref_url',
+    'fbclid',
+    'gclid',
+    'msclkid',
+    'mc_cid',
+    'mc_eid'
+  ];
+
+  const cleanedUrl = new URL(url.href);
+  let removed = 0;
+
+  trackingParams.forEach(param => {
+    if (cleanedUrl.searchParams.has(param)) {
+      cleanedUrl.searchParams.delete(param);
+      removed++;
+    }
+  });
+
+  return { cleanedUrl, trackersRemoved: removed };
 }
 
 async function expandShortUrl(url: string): Promise<{ success: boolean; expandedUrl?: string; error?: string }> {
@@ -123,6 +161,7 @@ async function validateAndNormalizeUrl(input: string): Promise<ValidationResult>
 
   try {
     const url = new URL(urlString);
+    let wasExpanded = false;
 
     if (isShortLink(url)) {
       const expansionResult = await expandShortUrl(urlString);
@@ -137,6 +176,7 @@ async function validateAndNormalizeUrl(input: string): Promise<ValidationResult>
       urlString = expansionResult.expandedUrl;
       const expandedUrl = new URL(urlString);
       const platform = detectPlatform(expandedUrl);
+      wasExpanded = true;
 
       if (!platform) {
         return {
@@ -160,10 +200,15 @@ async function validateAndNormalizeUrl(input: string): Promise<ValidationResult>
         }
       }
 
+      const { cleanedUrl, trackersRemoved } = cleanTrackingParams(normalizedUrl);
+
       return {
         success: true,
-        url: normalizedUrl,
-        platform: platform
+        url: cleanedUrl,
+        platform: platform,
+        wasExpanded,
+        trackersRemoved,
+        wasAlreadyClean: !wasExpanded && trackersRemoved === 0
       };
     }
 
@@ -193,10 +238,15 @@ async function validateAndNormalizeUrl(input: string): Promise<ValidationResult>
       normalizedUrl = tiktokUrl;
     }
 
+    const { cleanedUrl, trackersRemoved } = cleanTrackingParams(normalizedUrl);
+
     return {
       success: true,
-      url: normalizedUrl,
-      platform: platform
+      url: cleanedUrl,
+      platform: platform,
+      wasExpanded,
+      trackersRemoved,
+      wasAlreadyClean: trackersRemoved === 0
     };
   } catch (error) {
     return {
@@ -213,12 +263,18 @@ function App() {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [wasExpanded, setWasExpanded] = useState(false);
+  const [trackersRemoved, setTrackersRemoved] = useState(0);
+  const [wasAlreadyClean, setWasAlreadyClean] = useState(false);
 
   const processUrl = useCallback(async (urlToProcess: string) => {
     setIsLoading(true);
     setError('');
     setNormalizedUrl(null);
     setPlatform(null);
+    setWasExpanded(false);
+    setTrackersRemoved(0);
+    setWasAlreadyClean(false);
 
     try {
       const result = await validateAndNormalizeUrl(urlToProcess);
@@ -226,6 +282,9 @@ function App() {
       if (result.success && result.url && result.platform) {
         setNormalizedUrl(result.url);
         setPlatform(result.platform);
+        setWasExpanded(result.wasExpanded || false);
+        setTrackersRemoved(result.trackersRemoved || 0);
+        setWasAlreadyClean(result.wasAlreadyClean || false);
         setError('');
       } else {
         setError(result.error || 'An error occurred');
@@ -261,6 +320,9 @@ function App() {
     setError('');
     setNormalizedUrl(null);
     setPlatform(null);
+    setWasExpanded(false);
+    setTrackersRemoved(0);
+    setWasAlreadyClean(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -323,6 +385,7 @@ function App() {
                 placeholder="Paste Instagram, Reddit, or TikTok link..."
                 className="w-full px-6 py-4 text-lg border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
               />
+              <p className="mt-2 text-sm text-slate-400 text-center">Press Enter to unwrap</p>
               {error && (
                 <div className="mt-3 flex items-start gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg border border-red-200">
                   <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -349,15 +412,46 @@ function App() {
 
           {normalizedUrl && platform && (
             <div className="mt-6 p-6 bg-green-50 rounded-xl border-2 border-green-200">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
                 <span className="text-sm font-semibold text-green-700">Detected Platform:</span>
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
                   {platform}
                 </span>
+                {wasExpanded && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700 border border-blue-300">
+                    <LinkIcon className="w-3.5 h-3.5 mr-1.5" />
+                    Link Expanded
+                  </span>
+                )}
+                {trackersRemoved > 0 && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-700 border border-emerald-300">
+                    <ShieldCheck className="w-3.5 h-3.5 mr-1.5" />
+                    Removed {trackersRemoved} tracker{trackersRemoved !== 1 ? 's' : ''}
+                  </span>
+                )}
+                {wasAlreadyClean && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-600 border border-slate-300">
+                    <Check className="w-3.5 h-3.5 mr-1.5" />
+                    Already Clean
+                  </span>
+                )}
               </div>
-              <p className="text-sm text-slate-900 break-all font-mono bg-white px-4 py-3 rounded border border-green-200 mb-4">
-                {normalizedUrl.href}
-              </p>
+              <div className="relative group mb-4">
+                <p className="text-sm text-slate-900 break-all font-mono bg-white px-4 py-3 pr-12 rounded border border-green-200 select-all">
+                  {normalizedUrl.href}
+                </p>
+                <button
+                  onClick={handleCopy}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                  title="Copy URL"
+                >
+                  {isCopied ? (
+                    <Check className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-slate-500" />
+                  )}
+                </button>
+              </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleCopy}
