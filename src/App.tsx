@@ -1,10 +1,31 @@
 import { useState } from 'react';
 import { Link2, AlertCircle } from 'lucide-react';
 
+type Platform = 'Instagram' | 'Reddit' | 'TikTok';
+
 interface ValidationResult {
   success: boolean;
   url?: URL;
+  platform?: Platform;
   error?: string;
+}
+
+function detectPlatform(url: URL): Platform | null {
+  const hostname = url.hostname.toLowerCase();
+
+  if (hostname === 'instagram.com' || hostname === 'www.instagram.com') {
+    return 'Instagram';
+  }
+
+  if (hostname === 'reddit.com' || hostname === 'www.reddit.com' || hostname === 'old.reddit.com') {
+    return 'Reddit';
+  }
+
+  if (hostname === 'tiktok.com' || hostname === 'www.tiktok.com' || hostname === 'vm.tiktok.com') {
+    return 'TikTok';
+  }
+
+  return null;
 }
 
 function validateAndNormalizeUrl(input: string): ValidationResult {
@@ -23,9 +44,19 @@ function validateAndNormalizeUrl(input: string): ValidationResult {
 
   try {
     const url = new URL(urlString);
+    const platform = detectPlatform(url);
+
+    if (!platform) {
+      return {
+        success: false,
+        error: 'Unsupported platform. Please use an Instagram, Reddit, or TikTok link.'
+      };
+    }
+
     return {
       success: true,
-      url: url
+      url: url,
+      platform: platform
     };
   } catch (error) {
     return {
@@ -38,23 +69,27 @@ function validateAndNormalizeUrl(input: string): ValidationResult {
 function App() {
   const [linkInput, setLinkInput] = useState('');
   const [normalizedUrl, setNormalizedUrl] = useState<URL | null>(null);
+  const [platform, setPlatform] = useState<Platform | null>(null);
   const [error, setError] = useState<string>('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLinkInput(e.target.value);
     setError('');
     setNormalizedUrl(null);
+    setPlatform(null);
   };
 
   const handleButtonClick = () => {
     const result = validateAndNormalizeUrl(linkInput);
 
-    if (result.success && result.url) {
+    if (result.success && result.url && result.platform) {
       setNormalizedUrl(result.url);
+      setPlatform(result.platform);
       setError('');
     } else {
       setError(result.error || 'An error occurred');
       setNormalizedUrl(null);
+      setPlatform(null);
     }
   };
 
@@ -100,8 +135,14 @@ function App() {
             </button>
           </div>
 
-          {normalizedUrl && (
+          {normalizedUrl && platform && (
             <div className="mt-6 p-6 bg-green-50 rounded-xl border-2 border-green-200">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm font-semibold text-green-700">Detected Platform:</span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-600 text-white">
+                  {platform}
+                </span>
+              </div>
               <p className="text-sm text-slate-900 break-all font-mono bg-white px-4 py-3 rounded border border-green-200">
                 {normalizedUrl.href}
               </p>
