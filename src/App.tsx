@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link2, AlertCircle, Loader2 } from 'lucide-react';
+import { Link2, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
 type Platform = 'Instagram' | 'Reddit' | 'TikTok';
@@ -247,6 +247,12 @@ function App() {
     }
   };
 
+  const handleWatchNow = () => {
+    if (normalizedUrl) {
+      window.location.href = normalizedUrl.href;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-6">
       <div className="w-full max-w-2xl">
@@ -304,9 +310,16 @@ function App() {
                   {platform}
                 </span>
               </div>
-              <p className="text-sm text-slate-900 break-all font-mono bg-white px-4 py-3 rounded border border-green-200">
+              <p className="text-sm text-slate-900 break-all font-mono bg-white px-4 py-3 rounded border border-green-200 mb-4">
                 {normalizedUrl.href}
               </p>
+              <button
+                onClick={handleWatchNow}
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold text-lg py-3 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              >
+                <ExternalLink className="w-5 h-5" />
+                <span>Watch Now</span>
+              </button>
             </div>
           )}
         </div>
