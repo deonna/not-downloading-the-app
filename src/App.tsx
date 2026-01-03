@@ -41,6 +41,12 @@ function rewriteInstagramUrl(url: URL): URL {
   return url;
 }
 
+function rewriteRedditUrl(url: URL): URL {
+  const pathname = url.pathname;
+  const rewrittenUrl = new URL(`https://old.reddit.com${pathname}`);
+  return rewrittenUrl;
+}
+
 function validateAndNormalizeUrl(input: string): ValidationResult {
   if (!input || input.trim() === '') {
     return {
@@ -70,6 +76,8 @@ function validateAndNormalizeUrl(input: string): ValidationResult {
 
     if (platform === 'Instagram') {
       normalizedUrl = rewriteInstagramUrl(url);
+    } else if (platform === 'Reddit') {
+      normalizedUrl = rewriteRedditUrl(url);
     }
 
     return {
