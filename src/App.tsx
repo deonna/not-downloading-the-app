@@ -47,6 +47,20 @@ function rewriteRedditUrl(url: URL): URL {
   return rewrittenUrl;
 }
 
+function rewriteTikTokUrl(url: URL): URL | null {
+  const pathname = url.pathname;
+  const videoMatch = pathname.match(/\/@([a-zA-Z0-9._-]+)\/video\/(\d+)/);
+
+  if (videoMatch && videoMatch[1] && videoMatch[2]) {
+    const username = videoMatch[1];
+    const videoId = videoMatch[2];
+    const rewrittenUrl = new URL(`https://www.tiktok.com/@${username}/video/${videoId}`);
+    return rewrittenUrl;
+  }
+
+  return null;
+}
+
 function validateAndNormalizeUrl(input: string): ValidationResult {
   if (!input || input.trim() === '') {
     return {
@@ -78,6 +92,15 @@ function validateAndNormalizeUrl(input: string): ValidationResult {
       normalizedUrl = rewriteInstagramUrl(url);
     } else if (platform === 'Reddit') {
       normalizedUrl = rewriteRedditUrl(url);
+    } else if (platform === 'TikTok') {
+      const tiktokUrl = rewriteTikTokUrl(url);
+      if (!tiktokUrl) {
+        return {
+          success: false,
+          error: 'Invalid TikTok URL. Please use a TikTok video link (e.g., tiktok.com/@user/video/123456).'
+        };
+      }
+      normalizedUrl = tiktokUrl;
     }
 
     return {
