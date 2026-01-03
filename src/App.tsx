@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link2, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
+import { Link2, AlertCircle, Loader2, ExternalLink, Copy, Check } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
 type Platform = 'Instagram' | 'Reddit' | 'TikTok';
@@ -212,6 +212,7 @@ function App() {
   const [platform, setPlatform] = useState<Platform | null>(null);
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLinkInput(e.target.value);
@@ -250,6 +251,20 @@ function App() {
   const handleWatchNow = () => {
     if (normalizedUrl) {
       window.location.href = normalizedUrl.href;
+    }
+  };
+
+  const handleCopy = async () => {
+    if (normalizedUrl) {
+      try {
+        await navigator.clipboard.writeText(normalizedUrl.href);
+        setIsCopied(true);
+        setTimeout(() => {
+          setIsCopied(false);
+        }, 2000);
+      } catch (error) {
+        console.error('Failed to copy:', error);
+      }
     }
   };
 
@@ -313,13 +328,31 @@ function App() {
               <p className="text-sm text-slate-900 break-all font-mono bg-white px-4 py-3 rounded border border-green-200 mb-4">
                 {normalizedUrl.href}
               </p>
-              <button
-                onClick={handleWatchNow}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold text-lg py-3 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-              >
-                <ExternalLink className="w-5 h-5" />
-                <span>Watch Now</span>
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleCopy}
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-semibold text-lg py-3 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                >
+                  {isCopied ? (
+                    <>
+                      <Check className="w-5 h-5" />
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-5 h-5" />
+                      <span>Copy Link</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleWatchNow}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold text-lg py-3 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                  <span>Watch Now</span>
+                </button>
+              </div>
             </div>
           )}
         </div>
