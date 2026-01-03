@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link2, AlertCircle, Loader2, ExternalLink, Copy, Check } from 'lucide-react';
 import { supabase } from './lib/supabase';
 
@@ -33,7 +33,7 @@ async function expandShortUrl(url: string): Promise<{ success: boolean; expanded
     if (error) {
       return {
         success: false,
-        error: error.message || 'Failed to expand short link'
+        error: error.message || 'Network error while expanding short link. Please try again.'
       };
     }
 
@@ -46,12 +46,12 @@ async function expandShortUrl(url: string): Promise<{ success: boolean; expanded
 
     return {
       success: false,
-      error: 'Failed to expand short link'
+      error: 'Could not expand short link. Please try the full URL instead.'
     };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to expand short link'
+      error: error instanceof Error ? error.message : 'Network error while expanding short link. Please try again.'
     };
   }
 }
@@ -130,7 +130,7 @@ async function validateAndNormalizeUrl(input: string): Promise<ValidationResult>
       if (!expansionResult.success || !expansionResult.expandedUrl) {
         return {
           success: false,
-          error: expansionResult.error || 'Failed to expand short link'
+          error: expansionResult.error || 'Could not expand short link. Please try the full URL instead.'
         };
       }
 
@@ -141,7 +141,7 @@ async function validateAndNormalizeUrl(input: string): Promise<ValidationResult>
       if (!platform) {
         return {
           success: false,
-          error: 'Expanded link is not a supported platform.'
+          error: 'This short link does not lead to a supported platform. We only support Instagram, Reddit, and TikTok.'
         };
       }
 
@@ -172,7 +172,7 @@ async function validateAndNormalizeUrl(input: string): Promise<ValidationResult>
     if (!platform) {
       return {
         success: false,
-        error: 'Unsupported platform. Please use an Instagram, Reddit, or TikTok link.'
+        error: 'We only support Instagram, Reddit, and TikTok links right now.'
       };
     }
 
@@ -187,7 +187,7 @@ async function validateAndNormalizeUrl(input: string): Promise<ValidationResult>
       if (!tiktokUrl) {
         return {
           success: false,
-          error: 'Invalid TikTok URL. Please use a TikTok video link (e.g., tiktok.com/@user/video/123456).'
+          error: 'This TikTok link format is not supported. Please use a link to a specific video.'
         };
       }
       normalizedUrl = tiktokUrl;
@@ -201,7 +201,7 @@ async function validateAndNormalizeUrl(input: string): Promise<ValidationResult>
   } catch (error) {
     return {
       success: false,
-      error: 'Invalid URL format. Please enter a valid web address.'
+      error: 'Invalid URL format. Please check the link and try again.'
     };
   }
 }
@@ -214,29 +214,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const urlParam = params.get('url');
-
-    if (urlParam) {
-      try {
-        const decodedUrl = decodeURIComponent(urlParam);
-        setLinkInput(decodedUrl);
-        processUrl(decodedUrl);
-      } catch (error) {
-        setError('Invalid URL parameter');
-      }
-    }
-  }, []);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLinkInput(e.target.value);
-    setError('');
-    setNormalizedUrl(null);
-    setPlatform(null);
-  };
-
-  const processUrl = async (urlToProcess: string) => {
+  const processUrl = useCallback(async (urlToProcess: string) => {
     setIsLoading(true);
     setError('');
     setNormalizedUrl(null);
@@ -261,6 +239,34 @@ function App() {
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlParam = params.get('url');
+
+    if (urlParam) {
+      try {
+        const decodedUrl = decodeURIComponent(urlParam);
+        setLinkInput(decodedUrl);
+        processUrl(decodedUrl);
+      } catch (error) {
+        setError('Could not process URL from link. Please paste a link directly.');
+      }
+    }
+  }, [processUrl]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLinkInput(e.target.value);
+    setError('');
+    setNormalizedUrl(null);
+    setPlatform(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && linkInput.trim() && !isLoading) {
+      processUrl(linkInput);
+    }
   };
 
   const handleButtonClick = async () => {
@@ -276,13 +282,17 @@ function App() {
   const handleCopy = async () => {
     if (normalizedUrl) {
       try {
-        await navigator.clipboard.writeText(normalizedUrl.href);
-        setIsCopied(true);
-        setTimeout(() => {
-          setIsCopied(false);
-        }, 2000);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(normalizedUrl.href);
+          setIsCopied(true);
+          setTimeout(() => {
+            setIsCopied(false);
+          }, 2000);
+        } else {
+          setError('Copy to clipboard is not supported in your browser.');
+        }
       } catch (error) {
-        console.error('Failed to copy:', error);
+        setError('Could not copy to clipboard. Please copy the link manually.');
       }
     }
   };
@@ -295,10 +305,10 @@ function App() {
             <Link2 className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-slate-900 mb-3">
-            Link Unwrapper
+            not downloading this
           </h1>
           <p className="text-lg text-slate-600">
-            Watch social media content in your browser without logging in
+            Watch social media without logging in
           </p>
         </div>
 
@@ -309,7 +319,8 @@ function App() {
                 type="text"
                 value={linkInput}
                 onChange={handleInputChange}
-                placeholder="Paste your Instagram, Reddit, TikTok, or short link here..."
+                onKeyDown={handleKeyDown}
+                placeholder="Paste Instagram, Reddit, or TikTok link..."
                 className="w-full px-6 py-4 text-lg border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
               />
               {error && (
@@ -377,7 +388,7 @@ function App() {
         </div>
 
         <div className="mt-6 text-center text-sm text-slate-500">
-          Supports Instagram Reels, Reddit posts, TikTok videos, and short links (vm.tiktok.com, vt.tiktok.com, redd.it)
+          Supports Instagram Reels, Reddit posts, and TikTok videos
         </div>
       </div>
     </div>
