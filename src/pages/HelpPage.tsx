@@ -12,7 +12,7 @@ export function HelpPage() {
           <h1 className="text-5xl font-display font-extrabold mb-3 uppercase tracking-tight">
             How to Share Links
           </h1>
-          <p className="text-lg font-serif text-black/70">
+          <p className="text-lg font-display font-normal text-black/60">
             Make it easy to unwrap social media links on mobile
           </p>
         </div>
@@ -25,7 +25,7 @@ export function HelpPage() {
               </div>
               <div>
                 <h2 className="text-3xl font-display font-extrabold mb-2 uppercase tracking-tight">Android Sharing</h2>
-                <p className="font-serif text-black/70">Share links directly from any app</p>
+                <p className="font-display font-normal text-black/60">Share links directly from any app</p>
               </div>
             </div>
 
@@ -75,7 +75,7 @@ export function HelpPage() {
               </div>
               <div>
                 <h2 className="text-3xl font-display font-extrabold mb-2 uppercase tracking-tight">iOS Shortcuts</h2>
-                <p className="font-serif text-black/70">Create a quick action for Safari and other apps</p>
+                <p className="font-display font-normal text-black/60">Create a quick action for Safari and other apps</p>
               </div>
             </div>
 
@@ -152,7 +152,7 @@ export function HelpPage() {
               </div>
               <div>
                 <h2 className="text-3xl font-display font-extrabold mb-2 uppercase tracking-tight">Tips & Tricks</h2>
-                <p className="font-serif text-black/70">Get the most out of this tool</p>
+                <p className="font-display font-normal text-black/60">Get the most out of this tool</p>
               </div>
             </div>
 
@@ -186,7 +186,7 @@ export function HelpPage() {
               </div>
               <div>
                 <h2 className="text-3xl font-display font-extrabold mb-2 uppercase tracking-tight">Browser Extension</h2>
-                <p className="font-serif text-black/70">For desktop users</p>
+                <p className="font-display font-normal text-black/60">For desktop users</p>
               </div>
             </div>
 

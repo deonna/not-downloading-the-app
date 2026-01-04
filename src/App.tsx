@@ -386,13 +386,13 @@ function App() {
           <h1 className="text-5xl sm:text-6xl font-display font-extrabold mb-3 uppercase tracking-tight">
             not downloading this
           </h1>
-          <p className="text-lg font-serif text-black/70">
+          <p className="text-lg font-display font-normal text-black/60">
             Watch social media without logging in
           </p>
         </div>
 
-        <div className="brutalist-card p-8 layered-rectangles">
-          <div className="space-y-5 relative z-10">
+        <div className="brutalist-card p-8">
+          <div className="space-y-5">
             <div>
               <input
                 type="text"
