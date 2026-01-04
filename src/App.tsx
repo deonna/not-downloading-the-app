@@ -22,6 +22,38 @@ interface ExpandUrlError {
   error: string;
 }
 
+interface RecentUrl {
+  input: string;
+  output: string;
+  platform: Platform;
+  timestamp: number;
+}
+
+const RECENT_URLS_KEY = 'recentUrls';
+const MAX_RECENT_URLS = 5;
+
+function getRecentUrls(): RecentUrl[] {
+  try {
+    const stored = localStorage.getItem(RECENT_URLS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecentUrl(item: RecentUrl): void {
+  try {
+    const existing = getRecentUrls();
+    // Remove duplicate if exists
+    const filtered = existing.filter(u => u.input !== item.input);
+    // Add new at front, limit to MAX
+    const updated = [item, ...filtered].slice(0, MAX_RECENT_URLS);
+    localStorage.setItem(RECENT_URLS_KEY, JSON.stringify(updated));
+  } catch {
+    // Ignore localStorage errors
+  }
+}
+
 function isShortLink(url: URL): boolean {
   const hostname = url.hostname.toLowerCase();
   return hostname === 'vm.tiktok.com' || hostname === 'vt.tiktok.com' || hostname === 'redd.it';
@@ -266,6 +298,12 @@ function App() {
   const [wasExpanded, setWasExpanded] = useState(false);
   const [trackersRemoved, setTrackersRemoved] = useState(0);
   const [wasAlreadyClean, setWasAlreadyClean] = useState(false);
+  const [recentUrls, setRecentUrls] = useState<RecentUrl[]>([]);
+
+  // Load recent URLs from localStorage on mount
+  useEffect(() => {
+    setRecentUrls(getRecentUrls());
+  }, []);
 
   const processUrl = useCallback(async (urlToProcess: string) => {
     setIsLoading(true);
@@ -277,7 +315,15 @@ function App() {
     setWasAlreadyClean(false);
 
     try {
-      const result = await validateAndNormalizeUrl(urlToProcess);
+      // Add 5-second timeout for slow/hanging requests
+      const timeoutPromise = new Promise<ValidationResult>((_, reject) => {
+        setTimeout(() => reject(new Error('Request timed out. Please try again.')), 5000);
+      });
+
+      const result = await Promise.race([
+        validateAndNormalizeUrl(urlToProcess),
+        timeoutPromise
+      ]);
 
       if (result.success && result.url && result.platform) {
         setNormalizedUrl(result.url);
@@ -286,6 +332,16 @@ function App() {
         setTrackersRemoved(result.trackersRemoved || 0);
         setWasAlreadyClean(result.wasAlreadyClean || false);
         setError('');
+
+        // Save to recent URLs
+        const newRecent: RecentUrl = {
+          input: urlToProcess,
+          output: result.url.href,
+          platform: result.platform,
+          timestamp: Date.now()
+        };
+        saveRecentUrl(newRecent);
+        setRecentUrls(getRecentUrls());
       } else {
         setError(result.error || 'An error occurred');
         setNormalizedUrl(null);
@@ -425,6 +481,27 @@ function App() {
                 'Unwrap Link'
               )}
             </button>
+
+            {recentUrls.length > 0 && !normalizedUrl && (
+              <div className="pt-2">
+                <p className="text-xs font-mono-custom text-black/50 uppercase tracking-wider mb-2">Recent</p>
+                <div className="flex flex-wrap gap-2">
+                  {recentUrls.map((item, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setLinkInput(item.input);
+                        processUrl(item.input);
+                      }}
+                      className="text-xs font-mono-custom px-3 py-1.5 bg-white border-2 border-black hover:bg-[#FF2B51] hover:text-white transition-colors truncate max-w-[200px]"
+                      title={item.input}
+                    >
+                      {item.platform}: {new URL(item.output).pathname.slice(0, 20)}...
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {normalizedUrl && platform && (
