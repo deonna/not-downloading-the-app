@@ -7,7 +7,15 @@ export function ShareHandler() {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const url = searchParams.get('url') || searchParams.get('text');
+    const urlParam = searchParams.get('url');
+    const textParam = searchParams.get('text');
+
+    let url = urlParam;
+    if (!url && textParam) {
+      // Extract URL from text (handles cases like "check this out https://... lol")
+      const urlMatch = textParam.match(/https?:\/\/[^\s]+/);
+      url = urlMatch ? urlMatch[0] : textParam;
+    }
 
     if (url) {
       navigate(`/?url=${encodeURIComponent(url)}`, { replace: true });
