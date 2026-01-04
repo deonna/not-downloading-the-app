@@ -46,7 +46,7 @@ export function HelpPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-black mb-1 uppercase tracking-wide text-sm">Select this app</h3>
-                  <p className="text-black/70 text-sm">Look for "not downloading this" or "not dl this" in your share menu</p>
+                  <p className="text-black/70 text-sm">Look for "not installing that" in your share menu</p>
                 </div>
               </div>
 
@@ -123,7 +123,7 @@ export function HelpPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-black mb-1 uppercase tracking-wide text-sm">Name and save</h3>
-                  <p className="text-black/70 text-sm">Name it "not downloading this" and tap Done</p>
+                  <p className="text-black/70 text-sm">Name it "not installing that" and tap Done</p>
                 </div>
               </div>
 

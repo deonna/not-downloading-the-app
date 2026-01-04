@@ -13,7 +13,7 @@ export function Navigation() {
             <div className="w-10 h-10 border-3 border-black flex items-center justify-center bg-white">
               <Link2 className="w-6 h-6" strokeWidth={3} />
             </div>
-            <span className="font-display font-bold text-lg hidden sm:inline uppercase tracking-tight">not downloading this</span>
+            <span className="font-display font-bold text-lg hidden sm:inline uppercase tracking-tight">not installing that</span>
           </Link>
 
           <div className="flex items-center gap-2">

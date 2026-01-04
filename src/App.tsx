@@ -384,7 +384,7 @@ function App() {
             <div className="absolute -z-10 top-2 left-2 w-full h-full bg-black"></div>
           </div>
           <h1 className="text-5xl sm:text-6xl font-display font-extrabold mb-3 uppercase tracking-tight">
-            not downloading this
+            not installing that
           </h1>
           <p className="text-lg font-display font-normal text-black/60">
             Watch social media without logging in
