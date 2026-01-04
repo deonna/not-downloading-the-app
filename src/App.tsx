@@ -165,13 +165,21 @@ function rewriteRedditUrl(url: URL): URL {
 
 function rewriteTikTokUrl(url: URL): URL | null {
   const pathname = url.pathname;
-  const videoMatch = pathname.match(/\/@([a-zA-Z0-9._-]+)\/video\/(\d+)/);
 
-  if (videoMatch && videoMatch[1] && videoMatch[2]) {
-    const username = videoMatch[1];
-    const videoId = videoMatch[2];
-    const rewrittenUrl = new URL(`https://www.tiktok.com/@${username}/video/${videoId}`);
-    return rewrittenUrl;
+  // Match with username: /@username/video/id
+  const videoMatchWithUser = pathname.match(/\/@([a-zA-Z0-9._-]+)\/video\/(\d+)/);
+  if (videoMatchWithUser && videoMatchWithUser[1] && videoMatchWithUser[2]) {
+    const username = videoMatchWithUser[1];
+    const videoId = videoMatchWithUser[2];
+    return new URL(`https://www.tiktok.com/@${username}/video/${videoId}`);
+  }
+
+  // Match without username: /@/video/id (TikTok share links sometimes omit username)
+  const videoMatchNoUser = pathname.match(/\/@\/video\/(\d+)/);
+  if (videoMatchNoUser && videoMatchNoUser[1]) {
+    const videoId = videoMatchNoUser[1];
+    // Keep /@/video/ format - TikTok will resolve the username
+    return new URL(`https://www.tiktok.com/@/video/${videoId}`);
   }
 
   return null;
