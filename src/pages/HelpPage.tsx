@@ -79,6 +79,21 @@ export function HelpPage() {
               </div>
             </div>
 
+            <div className="mb-6 p-4 bg-[#FF2B51] border-4 border-black">
+              <p className="text-white font-bold mb-3 font-display uppercase tracking-wide">Want the easy way?</p>
+              <a
+                href="https://www.icloud.com/shortcuts/2fb40633d6654f118a0aa640051e79c7"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-white text-black font-bold px-4 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors font-mono-custom text-sm uppercase tracking-wide"
+              >
+                <Download className="w-4 h-4" strokeWidth={3} />
+                Download Shortcut
+              </a>
+            </div>
+
+            <p className="text-sm font-mono-custom text-black/50 uppercase tracking-wider mb-4">Or create it manually:</p>
+
             <div className="space-y-4">
               <div className="flex gap-4">
                 <div className="w-8 h-8 bg-black text-white flex items-center justify-center flex-shrink-0 font-bold font-mono-custom">
@@ -139,7 +154,7 @@ export function HelpPage() {
 
               <div className="mt-6 p-4 bg-white border-l-8 border-amber-500">
                 <p className="text-sm text-black">
-                  <strong className="font-mono-custom uppercase tracking-wide">Note:</strong> Replace "notinstallingthat.com" with your actual domain name in the URL field
+                  <strong className="font-mono-custom uppercase tracking-wide">Tip:</strong> Make sure "Show in Share Sheet" is enabled in your shortcut's settings (tap the ⓘ icon) for it to appear when sharing
                 </p>
               </div>
             </div>
