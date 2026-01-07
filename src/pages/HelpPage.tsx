@@ -106,7 +106,7 @@ export function HelpPage() {
                       <div className="font-bold text-black mb-1 text-xs uppercase tracking-wide">Action 2: URL</div>
                       <div className="text-black/70 text-xs mb-2">Search for "URL" and add it. Set the URL to:</div>
                       <div className="text-[#FF2B51] font-bold text-xs break-all">
-                        https://notdownloadingthis.com/?url=[Shortcut Input]
+                        https://notinstallingthat.com/?url=[Shortcut Input]
                       </div>
                     </div>
                     <div className="bg-white p-3 border-3 border-black font-mono-custom">
@@ -139,7 +139,7 @@ export function HelpPage() {
 
               <div className="mt-6 p-4 bg-white border-l-8 border-amber-500">
                 <p className="text-sm text-black">
-                  <strong className="font-mono-custom uppercase tracking-wide">Note:</strong> Replace "notdownloadingthis.com" with your actual domain name in the URL field
+                  <strong className="font-mono-custom uppercase tracking-wide">Note:</strong> Replace "notinstallingthat.com" with your actual domain name in the URL field
                 </p>
               </div>
             </div>
@@ -202,7 +202,7 @@ export function HelpPage() {
                 <ol className="list-decimal list-inside space-y-2 text-sm text-black/70">
                   <li>Create a new bookmark in your browser</li>
                   <li>Name it "Unwrap Link"</li>
-                  <li className="break-all">For the URL, paste: <code className="bg-black text-white px-2 py-1 text-xs font-mono-custom">javascript:window.location='https://notdownloadingthis.com/?url='+encodeURIComponent(window.location.href)</code></li>
+                  <li className="break-all">For the URL, paste: <code className="bg-black text-white px-2 py-1 text-xs font-mono-custom">javascript:window.location='https://notinstallingthat.com/?url='+encodeURIComponent(window.location.href)</code></li>
                   <li>Click the bookmarklet while on any Instagram, Reddit, or TikTok page</li>
                 </ol>
               </div>
