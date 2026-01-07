@@ -3,8 +3,9 @@ import { Footer } from '../components/Footer';
 
 export function HelpPage() {
   return (
-    <div className="min-h-screen geometric-bg pt-20 pb-12 px-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen geometric-bg flex flex-col">
+      <div className="flex-1 pt-20 pb-12 px-6">
+        <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-16 h-16 border-4 border-black bg-[#FF2B51] mb-6 relative">
             <Share2 className="w-8 h-8 text-white" strokeWidth={3} />
@@ -226,13 +227,14 @@ export function HelpPage() {
           </section>
         </div>
 
-        <div className="mt-10 text-center">
-          <a
-            href="/"
-            className="brutalist-button-primary inline-flex items-center gap-2 px-8 py-4 text-base"
-          >
-            Try It Now
-          </a>
+          <div className="mt-10 text-center">
+            <a
+              href="/"
+              className="brutalist-button-primary inline-flex items-center gap-2 px-8 py-4 text-base"
+            >
+              Try It Now
+            </a>
+          </div>
         </div>
       </div>
       <Footer />

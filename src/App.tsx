@@ -441,162 +441,164 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen geometric-bg flex items-center justify-center p-6 pt-24">
-      <div className="w-full max-w-2xl">
-        <div className="text-center mb-8 relative">
-          <div className="inline-flex items-center justify-center w-16 h-16 border-4 border-black bg-[#FF2B51] mb-6 relative">
-            <Link2 className="w-8 h-8 text-white" strokeWidth={3} />
-            <div className="absolute -z-10 top-2 left-2 w-full h-full bg-black"></div>
+    <div className="min-h-screen geometric-bg flex flex-col">
+      <div className="flex-1 flex items-center justify-center p-6 pt-24">
+        <div className="w-full max-w-2xl">
+          <div className="text-center mb-8 relative">
+            <div className="inline-flex items-center justify-center w-16 h-16 border-4 border-black bg-[#FF2B51] mb-6 relative">
+              <Link2 className="w-8 h-8 text-white" strokeWidth={3} />
+              <div className="absolute -z-10 top-2 left-2 w-full h-full bg-black"></div>
+            </div>
+            <h1 className="text-5xl sm:text-6xl font-display font-extrabold mb-3 uppercase tracking-tight">
+              not installing that
+            </h1>
+            <p className="text-lg font-display font-normal text-black/60">
+              Watch social media without logging in
+            </p>
           </div>
-          <h1 className="text-5xl sm:text-6xl font-display font-extrabold mb-3 uppercase tracking-tight">
-            not installing that
-          </h1>
-          <p className="text-lg font-display font-normal text-black/60">
-            Watch social media without logging in
-          </p>
-        </div>
 
-        <div className="brutalist-card p-8">
-          <div className="space-y-5">
-            <div>
-              <input
-                type="text"
-                value={linkInput}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder="Paste Instagram, Reddit, or TikTok link..."
-                className="brutalist-input w-full px-6 py-4 text-lg font-mono-custom"
-              />
-              <p className="mt-2 text-xs font-mono-custom text-black/50 text-center uppercase tracking-wider">Press Enter to unwrap</p>
-              {error && (
-                <div className="mt-4 flex items-start gap-3 text-black bg-white px-4 py-3 border-l-8 border-red-600">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-600" strokeWidth={3} />
-                  <span className="text-sm font-semibold">{error}</span>
+          <div className="brutalist-card p-8">
+            <div className="space-y-5">
+              <div>
+                <input
+                  type="text"
+                  value={linkInput}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Paste Instagram, Reddit, or TikTok link..."
+                  className="brutalist-input w-full px-6 py-4 text-lg font-mono-custom"
+                />
+                <p className="mt-2 text-xs font-mono-custom text-black/50 text-center uppercase tracking-wider">Press Enter to unwrap</p>
+                {error && (
+                  <div className="mt-4 flex items-start gap-3 text-black bg-white px-4 py-3 border-l-8 border-red-600">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-600" strokeWidth={3} />
+                    <span className="text-sm font-semibold">{error}</span>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={handleButtonClick}
+                disabled={!linkInput.trim() || isLoading}
+                className="brutalist-button-primary w-full py-4 px-6 text-base flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  'Unwrap Link'
+                )}
+              </button>
+
+              {recentUrls.length > 0 && !normalizedUrl && (
+                <div className="pt-2">
+                  <p className="text-xs font-mono-custom text-black/50 uppercase tracking-wider mb-2">Recent</p>
+                  <div className="flex flex-wrap gap-2">
+                    {recentUrls.map((item, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          setLinkInput(item.input);
+                          processUrl(item.input);
+                        }}
+                        className="text-xs font-mono-custom px-3 py-1.5 bg-white border-2 border-black hover:bg-[#FF2B51] hover:text-white transition-colors truncate max-w-full"
+                        title={item.input}
+                      >
+                        {item.platform}: {new URL(item.output).pathname}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
-            <button
-              onClick={handleButtonClick}
-              disabled={!linkInput.trim() || isLoading}
-              className="brutalist-button-primary w-full py-4 px-6 text-base flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Processing...</span>
-                </>
-              ) : (
-                'Unwrap Link'
-              )}
-            </button>
-
-            {recentUrls.length > 0 && !normalizedUrl && (
-              <div className="pt-2">
-                <p className="text-xs font-mono-custom text-black/50 uppercase tracking-wider mb-2">Recent</p>
-                <div className="flex flex-wrap gap-2">
-                  {recentUrls.map((item, index) => (
+            {normalizedUrl && platform && (
+              <div className="mt-6 brutalist-card-sm p-6">
+                <div className="flex items-center gap-2 mb-4 flex-wrap">
+                  <span className="text-xs font-mono-custom font-semibold uppercase tracking-wide">Detected Platform:</span>
+                  <span className="brutalist-badge">
+                    {platform}
+                  </span>
+                  {wasExpanded && (
+                    <span className="brutalist-badge-outline inline-flex items-center gap-1">
+                      <LinkIcon className="w-3 h-3" />
+                      Expanded
+                    </span>
+                  )}
+                  {trackersRemoved > 0 && (
+                    <span className="brutalist-badge-outline inline-flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3" />
+                      {trackersRemoved} Tracker{trackersRemoved !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                  {wasAlreadyClean && (
+                    <span className="brutalist-badge-outline inline-flex items-center gap-1">
+                      <Check className="w-3 h-3" />
+                      Clean
+                    </span>
+                  )}
+                </div>
+                <div className="relative group mb-5">
+                  <p className="text-xs font-mono-custom break-all bg-white px-4 py-3 pr-12 border-3 border-black select-all">
+                    {normalizedUrl.href}
+                  </p>
+                  <button
+                    onClick={handleCopy}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-[#FF2B51] hover:text-white border-2 border-black transition-colors"
+                    title="Copy URL"
+                  >
+                    {isCopied ? (
+                      <Check className="w-4 h-4" strokeWidth={3} />
+                    ) : (
+                      <Copy className="w-4 h-4" strokeWidth={3} />
+                    )}
+                  </button>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={handleCopy}
+                    className="brutalist-button-secondary w-full py-3 px-6 text-sm flex items-center justify-center gap-2"
+                  >
+                    {isCopied ? (
+                      <>
+                        <Check className="w-4 h-4" strokeWidth={3} />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-4 h-4" strokeWidth={3} />
+                        <span>Copy Link</span>
+                      </>
+                    )}
+                  </button>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    {navigator.share && (
+                      <button
+                        onClick={handleShare}
+                        className="brutalist-button-secondary flex-1 py-3 px-6 text-sm flex items-center justify-center gap-2"
+                      >
+                        <Share2 className="w-4 h-4" strokeWidth={3} />
+                        <span>Share</span>
+                      </button>
+                    )}
                     <button
-                      key={index}
-                      onClick={() => {
-                        setLinkInput(item.input);
-                        processUrl(item.input);
-                      }}
-                      className="text-xs font-mono-custom px-3 py-1.5 bg-white border-2 border-black hover:bg-[#FF2B51] hover:text-white transition-colors truncate max-w-full"
-                      title={item.input}
+                      onClick={handleWatchNow}
+                      className="brutalist-button-primary flex-1 py-3 px-6 text-sm flex items-center justify-center gap-2"
                     >
-                      {item.platform}: {new URL(item.output).pathname}
+                      <ExternalLink className="w-4 h-4" strokeWidth={3} />
+                      <span>Watch Now</span>
                     </button>
-                  ))}
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          {normalizedUrl && platform && (
-            <div className="mt-6 brutalist-card-sm p-6">
-              <div className="flex items-center gap-2 mb-4 flex-wrap">
-                <span className="text-xs font-mono-custom font-semibold uppercase tracking-wide">Detected Platform:</span>
-                <span className="brutalist-badge">
-                  {platform}
-                </span>
-                {wasExpanded && (
-                  <span className="brutalist-badge-outline inline-flex items-center gap-1">
-                    <LinkIcon className="w-3 h-3" />
-                    Expanded
-                  </span>
-                )}
-                {trackersRemoved > 0 && (
-                  <span className="brutalist-badge-outline inline-flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3" />
-                    {trackersRemoved} Tracker{trackersRemoved !== 1 ? 's' : ''}
-                  </span>
-                )}
-                {wasAlreadyClean && (
-                  <span className="brutalist-badge-outline inline-flex items-center gap-1">
-                    <Check className="w-3 h-3" />
-                    Clean
-                  </span>
-                )}
-              </div>
-              <div className="relative group mb-5">
-                <p className="text-xs font-mono-custom break-all bg-white px-4 py-3 pr-12 border-3 border-black select-all">
-                  {normalizedUrl.href}
-                </p>
-                <button
-                  onClick={handleCopy}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-[#FF2B51] hover:text-white border-2 border-black transition-colors"
-                  title="Copy URL"
-                >
-                  {isCopied ? (
-                    <Check className="w-4 h-4" strokeWidth={3} />
-                  ) : (
-                    <Copy className="w-4 h-4" strokeWidth={3} />
-                  )}
-                </button>
-              </div>
-              <div className="flex flex-col gap-3">
-                <button
-                  onClick={handleCopy}
-                  className="brutalist-button-secondary w-full py-3 px-6 text-sm flex items-center justify-center gap-2"
-                >
-                  {isCopied ? (
-                    <>
-                      <Check className="w-4 h-4" strokeWidth={3} />
-                      <span>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" strokeWidth={3} />
-                      <span>Copy Link</span>
-                    </>
-                  )}
-                </button>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  {navigator.share && (
-                    <button
-                      onClick={handleShare}
-                      className="brutalist-button-secondary flex-1 py-3 px-6 text-sm flex items-center justify-center gap-2"
-                    >
-                      <Share2 className="w-4 h-4" strokeWidth={3} />
-                      <span>Share</span>
-                    </button>
-                  )}
-                  <button
-                    onClick={handleWatchNow}
-                    className="brutalist-button-primary flex-1 py-3 px-6 text-sm flex items-center justify-center gap-2"
-                  >
-                    <ExternalLink className="w-4 h-4" strokeWidth={3} />
-                    <span>Watch Now</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-6 text-center text-xs font-mono-custom text-black/60 uppercase tracking-wider">
-          Supports Instagram Reels, Reddit posts, and TikTok videos
+          <div className="mt-6 text-center text-xs font-mono-custom text-black/60 uppercase tracking-wider">
+            Supports Instagram Reels, Reddit posts, and TikTok videos
+          </div>
         </div>
       </div>
       <Footer />
