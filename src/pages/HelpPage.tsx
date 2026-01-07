@@ -1,4 +1,5 @@
 import { Share2, Smartphone, Download, CheckCircle, ExternalLink } from 'lucide-react';
+import { Footer } from '../components/Footer';
 
 export function HelpPage() {
   return (
@@ -234,6 +235,7 @@ export function HelpPage() {
           </a>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link2, AlertCircle, Loader2, ExternalLink, Copy, Check, ShieldCheck, Link as LinkIcon, Share2 } from 'lucide-react';
 import { supabase } from './lib/supabase';
+import { Footer } from './components/Footer';
 
 type Platform = 'Instagram' | 'Reddit' | 'TikTok';
 
@@ -598,6 +599,7 @@ function App() {
           Supports Instagram Reels, Reddit posts, and TikTok videos
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
