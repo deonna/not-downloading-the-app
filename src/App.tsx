@@ -501,10 +501,10 @@ function App() {
                         setLinkInput(item.input);
                         processUrl(item.input);
                       }}
-                      className="text-xs font-mono-custom px-3 py-1.5 bg-white border-2 border-black hover:bg-[#FF2B51] hover:text-white transition-colors truncate max-w-[200px]"
+                      className="text-xs font-mono-custom px-3 py-1.5 bg-white border-2 border-black hover:bg-[#FF2B51] hover:text-white transition-colors truncate max-w-full"
                       title={item.input}
                     >
-                      {item.platform}: {new URL(item.output).pathname.slice(0, 20)}...
+                      {item.platform}: {new URL(item.output).pathname}
                     </button>
                   ))}
                 </div>
