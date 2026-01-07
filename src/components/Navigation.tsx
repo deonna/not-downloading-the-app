@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Link2, HelpCircle, Home } from 'lucide-react';
+import { Link2, HelpCircle, Home, MessageSquare } from 'lucide-react';
 
 export function Navigation() {
   const location = useLocation();
@@ -26,6 +26,13 @@ export function Navigation() {
                 <span className="hidden sm:inline">Home</span>
               </Link>
             )}
+            <Link
+              to="/faq"
+              className="flex items-center gap-2 px-4 py-2 text-black hover:bg-[#FF2B51] hover:text-white border-2 border-transparent hover:border-black transition-all font-bold uppercase text-sm tracking-wide"
+            >
+              <MessageSquare className="w-4 h-4" strokeWidth={3} />
+              <span className="hidden sm:inline">FAQ</span>
+            </Link>
             <Link
               to="/help"
               className="flex items-center gap-2 px-4 py-2 text-black hover:bg-[#FF2B51] hover:text-white border-2 border-transparent hover:border-black transition-all font-bold uppercase text-sm tracking-wide"
