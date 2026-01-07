@@ -65,7 +65,7 @@ export function Footer() {
             </a>
 
             <a
-              href="https://www.linkedin.com/in/deonna-hodges/"
+              href="https://www.linkedin.com/in/deonnahodges/"
               target="_blank"
               rel="noopener noreferrer"
               className="group flex flex-col items-center gap-2"
